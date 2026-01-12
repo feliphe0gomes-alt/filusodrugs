@@ -1,57 +1,188 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>casos criminais</title>
-
+<meta charset="UTF-8">
+<title>Chat Ao Vivo</title>
 <style>
-body {background-color: black;}
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: black;
+        color: white;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 
-.meio {
-    text-align: center;
-}
+    .container {
+        width: 100%;
+        max-width: 600px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
 
-.extaze {
-    text-align: center;
-}
+    /* Tela de login */
+    .login {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
 
-.link {
-    text-align: center;
-}
+    .login input {
+        padding: 10px;
+        font-size: 16px;
+        border: none;
+        outline: none;
+        margin-bottom: 10px;
+        width: 200px;
+        text-align: center;
+    }
+
+    .login button {
+        padding: 10px 20px;
+        background: white;
+        color: black;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    /* Chat */
+    .chat {
+        display: none;
+        flex: 1;
+        flex-direction: column;
+    }
+
+    .messages {
+        flex: 1;
+        padding: 10px;
+        overflow-y: auto;
+        font-size: 14px;
+    }
+
+    .message {
+        margin-bottom: 6px;
+    }
+
+    .user {
+        color: #38bdf8;
+        font-weight: bold;
+    }
+
+    .input-area {
+        display: flex;
+        border-top: 1px solid #333;
+    }
+
+    .input-area input {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        outline: none;
+        background: black;
+        color: white;
+        font-size: 14px;
+    }
+
+    .input-area button {
+        padding: 10px 15px;
+        background: white;
+        color: black;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+    }
 </style>
-
 </head>
 <body>
-    <div class="meio">
 
- <h1 style="color: red;">casos criminais</h1>
+<div class="container">
 
- <p style="color: white;">Corpo é encontrado em casa abandonada e polícia investiga possível homicídio
+    <!-- Tela de Nome -->
+    <div class="login" id="loginScreen">
+        <h2>Escolha seu nome</h2>
+        <input type="text" id="usernameInput" placeholder="Seu nome">
+        <button onclick="saveName()">Entrar no chat</button>
+    </div>
 
-Moradores de um bairro da zona urbana acordaram com uma cena chocante nesta terça-feira. Um corpo foi encontrado dentro de uma casa abandonada, após vizinhos sentirem um forte odor vindo do local e acionarem a polícia.
-
-Segundo as primeiras informações, a vítima ainda não foi identificada oficialmente. A Polícia Militar isolou a área e a perícia foi chamada para analisar o ambiente. Não havia documentos junto ao corpo, o que dificulta, neste primeiro momento, a identificação.
-
-De acordo com investigadores, não é possível afirmar a causa da morte sem o laudo do Instituto Médico Legal (IML). No entanto, há indícios de que o caso possa se tratar de um homicídio, já que foram encontradas marcas suspeitas no local.
-
-Moradores afirmam que a casa abandonada era frequentemente usada por pessoas desconhecidas durante a noite. “A gente ouvia barulhos, mas nunca imaginou que algo assim pudesse acontecer”, disse um vizinho, que preferiu não se identificar.
-
-O caso segue sob investigação da Polícia Civil. Qualquer informação que possa ajudar a esclarecer o ocorrido pode ser repassada de forma anônima às autoridades.</p>
- 
-
-
-<div class="extaze">
-
-<img src="extaze.PNG" alt="">
+    <!-- Chat -->
+    <div class="chat" id="chatScreen">
+        <div class="messages" id="messages"></div>
+        <div class="input-area">
+            <input type="text" id="messageInput" placeholder="Digite sua mensagem...">
+            <button onclick="sendMessage()">Enviar</button>
+        </div>
+    </div>
 
 </div>
 
-<div class="link">
-<a href="https://imgur.com/ucVpIhP" style="color: green;" >aqui para comprar(PIX)</a>
-</div>
+<script>
+const loginScreen = document.getElementById("loginScreen");
+const chatScreen = document.getElementById("chatScreen");
+const messagesDiv = document.getElementById("messages");
 
-<a href="jogo.html" style="color: green;">site de jogo pirata gratis</a>
+// Verifica se já existe nome salvo
+const savedName = localStorage.getItem("chat-username");
+if (savedName) {
+    showChat();
+}
+
+// Salvar nome
+function saveName() {
+    const name = document.getElementById("usernameInput").value.trim();
+    if (name === "") return;
+    localStorage.setItem("chat-username", name);
+    showChat();
+}
+
+// Mostrar chat
+function showChat() {
+    loginScreen.style.display = "none";
+    chatScreen.style.display = "flex";
+}
+
+// Enviar mensagem
+function sendMessage() {
+    const username = localStorage.getItem("chat-username");
+    const message = document.getElementById("messageInput").value;
+
+    if (!message.trim()) return;
+
+    const data = {
+        user: username,
+        text: message,
+        time: Date.now()
+    };
+
+    // Envia para outras abas
+    localStorage.setItem("chat-message", JSON.stringify(data));
+
+    showMessage(username, message);
+    document.getElementById("messageInput").value = "";
+}
+
+// Receber mensagens em tempo real
+window.addEventListener("storage", (event) => {
+    if (event.key === "chat-message") {
+        const data = JSON.parse(event.newValue);
+        showMessage(data.user, data.text);
+    }
+});
+
+// Mostrar mensagem
+function showMessage(user, text) {
+    const msg = document.createElement("div");
+    msg.className = "message";
+    msg.innerHTML = `<span class="user">${user}:</span> ${text}`;
+    messagesDiv.appendChild(msg);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+</script>
 
 </body>
 </html>
